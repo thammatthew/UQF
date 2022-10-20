@@ -106,68 +106,6 @@ uqf_to_iqf <- function(uqf_tbl, mode = "strict", custom_alpha_regex, custom_sep_
   return(iqf_tbl)
 }
 
-qtbl_to_html <- function(qtbl, randomise_op = F, image_dir = "images", output_filename = "questions") {
-  qtbl_html <- qtbl %>%
-    mutate(
-      Question = img_refs_to_html(Question, image_dir),
-      Options = img_refs_to_html(Options, image_dir),
-      Explanation = img_refs_to_html(Explanation, image_dir)
-    ) %>%
-    rowwise() %>%
-    mutate(
-      Op_Ans = list(tibble(
-        Alpha = str_extract_all(Options, regex("^[A-Z](?=\\. )", multiline = T)) %>% unlist,
-        Choice = str_extract_all(Options, regex("(?<=^[A-Z]\\. )(.*?)(?=^[A-Z]\\. |\\Z)", multiline = T, dotall = T)) %>% unlist %>% str_trim,
-        Correct = Alpha %in% (str_split(Answers, ",") %>% unlist %>% str_trim)
-      ))
-    )
-  
-  if(randomise_op == T) {
-    qtbl_html <- qtbl_html %>%
-      mutate(
-        Op_Ans = list(Op_Ans %>%
-                        slice_sample(prop = 1) %>%
-                        mutate(
-                          Alpha = LETTERS[1:length(Alpha)]
-                        )
-        )
-      )
-  }
-  
-  qtbl_html <- qtbl_html %>%
-    rowid_to_column(var = "Q_No") %>%
-    mutate(
-      Q_No = paste("Q", Q_No, ") ", sep = ""),
-      Question_html = paste('<div class="question">', Q_No, Question, '</div>', sep = ""),
-      Explanation_html = paste('<div class="explanation">', Explanation, '</div>', sep = ""),
-      Op_Ans = list(Op_Ans %>%
-                      mutate(
-                        Choice_html = paste0('<div class="option">', Alpha, '. ', Choice, '</div>'),
-                        Choice_Ans_html = if_else(Correct, 
-                                                  paste0('<div class="option correct">', Alpha, '. ', Choice, '</div>'), 
-                                                  paste0(Choice_html))
-                      )
-      ),
-      Options_html = paste('<div class="option_container">', paste(Op_Ans$Choice_html, collapse = ""), '</div>', sep = "\n"),
-      Op_Ans_html = paste('<div class="option_container">', paste(Op_Ans$Choice_Ans_html, collapse = ""), '</div>', sep = "\n"),
-      Final_Q_html = paste('<div class="question_container">', Question_html, Options_html, '</div>', sep = "\n"),
-      Final_QnA_html = paste('<div class="question_container">', Question_html, Op_Ans_html, Explanation_html, '</div>', sep = "\n")
-    )
-  
-  html_head =
-  '<head>
-    <link rel="stylesheet" href="styles.css"> 
-  </head>'
-  
-  q_output_filename = paste(output_filename, "_Q", sep = "")
-  qna_output_filename = paste(output_filename, "_QnA", sep = "")
-  
-  write_lines(paste(html_head, paste(qtbl_html$Final_Q_html, collapse = "\n"), sep = "\n"), paste(q_output_filename, ".html", sep = ""))
-  write_lines(paste(html_head, paste(qtbl_html$Final_QnA_html, collapse = "\n"), sep = "\n"), paste(qna_output_filename, ".html", sep = ""))
-
-  return(qtbl_html)
-}
-
 iqf_to_html <- function(iqf_tbl, randomise_op = F, image_dir = "images", output_filename = "questions") {
   html_tbl <- iqf_tbl %>%
     mutate(
