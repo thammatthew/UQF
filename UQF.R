@@ -152,6 +152,9 @@ iqf_to_html <- function(iqf_tbl, randomise_op = F, image_dir = "images", output_
   html_head =
     '<head>
     <link rel="stylesheet" href="styles.css"> 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
   </head>'
   
   q_output_filename = paste(output_filename, "_Q", sep = "")
