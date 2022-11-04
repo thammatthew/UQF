@@ -27,7 +27,7 @@ read_uqf <- function(uqf_zip_path, verify = T) {
   if(verify == T) {
     # Verify there is only one question table
     if(sum(!is.na(qtbl_paths)) == 1) {
-      qtbl_path <- tolower(qtbl_paths[!is.na(qtbl_paths)])
+      qtbl_path <- qtbl_paths[!is.na(qtbl_paths)]
       cat("Question table found.\n")
     } else {
       stop("Multiple tables detected, aborting.")
@@ -45,7 +45,7 @@ read_uqf <- function(uqf_zip_path, verify = T) {
            read_qtbl <- read_tsv
          })
   
-  qtbl <- read_qtbl(file.path(uqf_dir, basename(qtbl_path))) %>%
+  qtbl <- read_qtbl(file.path(uqf_dir, tolower(basename(qtbl_path)))) %>%
     mutate(
       Question = img_refs_to_lowercase(Question),
       Options = img_refs_to_lowercase(Options),
