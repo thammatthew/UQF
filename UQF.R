@@ -171,11 +171,11 @@ iqf_to_html <- function(iqf_tbl, randomise_op = F, image_dir = "images", output_
 }
 
 img_refs_to_lowercase <- function(string, image_dir) {
-  return(str_replace_all(string, "(\\[\\[)(.*)(\\]\\])", replacement = tolower))
+  return(str_replace_all(string, "(\\[\\[)(.*?)(\\]\\])", replacement = tolower))
 }
 
 img_refs_to_html <- function(string, image_dir) {
-  return(str_replace_all(string, "(\\[\\[)(.*)(\\]\\])", paste('<img src="', image_dir, '/\\2">', sep = "")))
+  return(str_replace_all(string, "(\\[\\[)(.*?)(\\]\\])", paste('<img src="', image_dir, '/\\2">', sep = "")))
 }
 
 uqf_to_html <- function(uqf_zip_path, verify = T, mode = "strict", randomise_op = F) {
