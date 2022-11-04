@@ -11,18 +11,19 @@ body {
 }
 
 img {
-    max-height: 1.7in;
+    max-height: 2in;
+    display: block;
 }
 
 .question_container {
-    margin: 1em 0;
     page-break-inside: avoid;
+    margin: 1em 0;
 }
 
 .question {
     margin-bottom: 1em;
-    white-space: pre-wrap;
     page-break-inside: avoid;
+    white-space: pre-wrap;
 }
 
 .option.correct {
@@ -31,6 +32,10 @@ img {
 
 .option {
     white-space: pre-wrap;
+}
+
+.option img {
+    margin: 1em 0;
 }
 
 .explanation{
