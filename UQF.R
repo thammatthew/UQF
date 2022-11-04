@@ -6,11 +6,8 @@ library(rmarkdown)
 read_uqf <- function(uqf_zip_path, verify = T) {
   uqf_paths <- unzip(uqf_zip_path, list = TRUE) %>% pull(Name)
   
-  qtbl_paths <- str_extract(uqf_paths, regex("^(?!~\\$|\\.~).*(\\.xlsx|\\.csv|\\.tsv)$", multiline = T))
-  
   uqf_dir <- file_path_sans_ext(uqf_zip_path)
   unzip(uqf_zip_path, junkpaths = T, exdir = uqf_dir, overwrite = T)
-  uqf_dir_paths <- list.files(uqf_dir, full.names = T)
   
   # Standardise all filenames to lowercase
   renamed <- file.rename(list.files(uqf_dir, full.names = T),
@@ -24,13 +21,20 @@ read_uqf <- function(uqf_zip_path, verify = T) {
     }
   }
   
-  if(verify == T) {
-    # Verify there is only one question table
-    if(sum(!is.na(qtbl_paths)) == 1) {
-      qtbl_path <- qtbl_paths[!is.na(qtbl_paths)]
-      cat("Question table found.\n")
-    } else {
+  uqf_dir_paths <- list.files(uqf_dir, full.names = T)
+  qtbl_paths <- str_extract(uqf_dir_paths, regex("^(?!~\\$|\\.~).*(\\.xlsx|\\.csv|\\.tsv)$", multiline = T))
+  qtbl_path <- qtbl_paths[!is.na(qtbl_paths)][1]
+  
+  n_qtbl = sum(!is.na(qtbl_paths))
+  if(n_qtbl == 1) {
+    cat("Question table found.\n")
+  } else if(n_qtbl == 0) {
+    stop("No table detected, aborting.")
+  } else {
+    if(verify) {
       stop("Multiple tables detected, aborting.")
+    } else {
+      cat("Warning: Multiple tables detected.\n")
     }
   }
   
@@ -45,7 +49,7 @@ read_uqf <- function(uqf_zip_path, verify = T) {
            read_qtbl <- read_tsv
          })
   
-  qtbl <- read_qtbl(file.path(uqf_dir, tolower(basename(qtbl_path)))) %>%
+  qtbl <- read_qtbl(file.path(uqf_dir, basename(qtbl_path))) %>%
     mutate(
       Question = img_refs_to_lowercase(Question),
       Options = img_refs_to_lowercase(Options),
@@ -60,7 +64,7 @@ read_uqf <- function(uqf_zip_path, verify = T) {
       stop("Missing columns, aborting.")
     }
     # Verify all image references point to an existing image
-    img_refs <- unlist(str_extract_all(format_csv(qtbl), "\\[\\[.*\\]\\]")) %>% str_replace_all("(\\[\\[|\\]\\])", "")
+    img_refs <- unlist(str_extract_all(format_csv(qtbl), "\\[\\[.*?\\]\\]")) %>% str_replace_all("(\\[\\[|\\]\\])", "")
     uqf_names <- list.files(uqf_dir)
     if(all(img_refs %in% uqf_names)){
       cat("All referenced image files found.\n")
