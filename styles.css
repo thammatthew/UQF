@@ -16,14 +16,18 @@ img {
 }
 
 .question_container {
-    page-break-inside: avoid;
+    break-inside: avoid-page;
     margin: 1em 0;
 }
 
 .question {
     margin-bottom: 1em;
-    page-break-inside: avoid;
+    break-inside: avoid-page;
     white-space: pre-wrap;
+}
+
+.option_container {
+    break-inside: avoid-page;
 }
 
 .option.correct {
