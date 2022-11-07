@@ -111,6 +111,16 @@ uqf_to_iqf <- function(uqf_tbl, mode = "strict", custom_alpha_regex, custom_sep_
   return(iqf_tbl)
 }
 
+iqf_to_uqf <- function(iqf_tbl) {
+  uqf_tbl <- iqf_tbl %>%
+    mutate(
+      Answers = Op_Ans %>% filter(Correct) %>% pull(Alpha) %>% paste(collapse = ", "),
+      Options = paste(Op_Ans$Alpha, Op_Ans$Choice, sep = ". ", collapse = "\n")
+    ) %>%
+    select(Question, Options, Answers, Explanation)
+  return(uqf_tbl)
+}
+
 iqf_to_html <- function(iqf_tbl, randomise_op = F, image_dir = "images", output_filename = "questions") {
   html_tbl <- iqf_tbl %>%
     mutate(
@@ -185,6 +195,7 @@ uqf_to_html <- function(uqf_zip_path, verify = T, mode = "strict", randomise_op 
   iqf_tbl <- uqf_to_iqf(uqf_tbl, mode = mode)
   html_tbl <- iqf_to_html(iqf_tbl, randomise_op = randomise_op, image_dir = uqf_name, output_filename = uqf_name)
   return(list(
+    uqf = uqf_tbl,
     iqf = iqf_tbl, 
     html_tbl = html_tbl))
 }
