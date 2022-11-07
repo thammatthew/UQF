@@ -116,8 +116,7 @@ iqf_to_uqf <- function(iqf_tbl) {
     mutate(
       Answers = Op_Ans %>% filter(Correct) %>% pull(Alpha) %>% paste(collapse = ", "),
       Options = paste(Op_Ans$Alpha, Op_Ans$Choice, sep = ". ", collapse = "\n")
-    ) %>%
-    select(Question, Options, Answers, Explanation)
+    )
   return(uqf_tbl)
 }
 
