@@ -51,9 +51,9 @@ read_uqf <- function(uqf_zip_path, verify = T) {
   
   qtbl <- read_qtbl(file.path(uqf_dir, basename(qtbl_path))) %>%
     mutate(
-      Question = img_refs_to_lowercase(Question),
+      Question = str_squish(img_refs_to_lowercase(Question)),
       Options = img_refs_to_lowercase(Options),
-      Explanation = img_refs_to_lowercase(Explanation)
+      Explanation = str_squish(img_refs_to_lowercase(Explanation))
     ) %>%
     select(Question, Options, Answers, Explanation)
 
