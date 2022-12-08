@@ -15,6 +15,10 @@ img {
     display: block;
 }
 
+#title {
+    font-weight: bold;
+}
+
 .question_container {
     break-inside: avoid-page;
     margin: 1em 0;
