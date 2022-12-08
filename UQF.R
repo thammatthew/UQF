@@ -146,6 +146,7 @@ iqf_to_html <- function(iqf_tbl, randomise_op = F, image_dir = "images", output_
   
   html_tbl <- html_tbl %>%
     rowid_to_column(var = "Q_No") %>%
+    mutate_if(is.character, ~replace_na(., "")) %>%
     mutate(
       Q_No = paste("Q", Q_No, ") ", sep = ""),
       Question_html = paste('<div class="question">', Q_No, Question, '</div>', sep = ""),

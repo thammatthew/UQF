@@ -21,9 +21,13 @@ img {
     break-after: avoid-page;
 }
 
+div:nth-child(2) {
+    break-inside: auto;
+}
+
 .question_container {
-    break-inside: avoid-page;
     margin: 1em 0;
+    break-inside: avoid-page;
 }
 
 .question {
