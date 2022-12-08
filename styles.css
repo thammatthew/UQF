@@ -11,13 +11,14 @@ body {
 }
 
 img {
-    max-height: 4in;
+    max-height: 3in;
+    max-width: 100%;
     display: block;
 }
 
 #title {
     font-weight: bold;
-    break-after: avoid;
+    break-after: avoid-page;
 }
 
 .question_container {
