@@ -1,7 +1,7 @@
 library(tidyverse)
 library(tools)
 library(readxl)
-library(rmarkdown)
+library(markdown)
 
 read_uqf <- function(uqf_zip_path, verify = T) {
   uqf_paths <- unzip(uqf_zip_path, list = TRUE) %>% pull(Name)
@@ -121,7 +121,13 @@ iqf_to_uqf <- function(iqf_tbl) {
   return(uqf_tbl)
 }
 
-iqf_to_html <- function(iqf_tbl, randomise_op = F, image_dir = "images", output_filename = "questions") {
+iqf_to_html <- function(iqf_tbl, 
+                        randomise_op = F, 
+                        image_dir = "images", 
+                        output_filename = "questions", 
+                        title = NA, 
+                        q_title = " - Questions", 
+                        qna_title = " - Answers") {
   html_tbl <- iqf_tbl %>%
     mutate(
       Question = img_refs_to_html(Question, image_dir),
@@ -149,8 +155,11 @@ iqf_to_html <- function(iqf_tbl, randomise_op = F, image_dir = "images", output_
     mutate_if(is.character, ~replace_na(., "")) %>%
     mutate(
       Q_No = paste("Q", Q_No, ") ", sep = ""),
-      Question_html = paste('<div class="question">', Q_No, Question, '</div>', sep = ""),
-      Explanation_html = paste('<div class="explanation">', Explanation, '</div>', sep = ""),
+      Question_html = paste0('<div class="question">', 
+                            '<span class="question-number">', Q_No, '</span>',
+                            '<span class="question-content">', markdown_to_html(Question), '</span>',
+                            '</div>'),
+      Explanation_html = paste0('<div class="explanation">', markdown_to_html(Explanation), '</div>'),
       Op_Ans = list(Op_Ans %>%
                       mutate(
                         Choice_html = paste0('<div class="option">', Alpha, '. ', Choice, '</div>'),
@@ -172,16 +181,17 @@ iqf_to_html <- function(iqf_tbl, randomise_op = F, image_dir = "images", output_
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
 </head>'
+
+  q_output_filename = paste0(output_filename, q_title)
+  qna_output_filename = paste0(output_filename, qna_title)
   
+  if(is.na(title)) {title <- output_filename}
   
-  q_output_filename = paste0(output_filename, " - Questions")
-  qna_output_filename = paste0(output_filename, " - Answers")
+  q_output_title = paste0('<div id="title">', title, q_title, '</div>')
+  qna_output_title = paste0('<div id="title">', title, qna_title, '</div>')
   
-  q_title = paste0('<div id="title">', q_output_filename, '</div>')
-  qna_title = paste0('<div id="title">', qna_output_filename, '</div>')
-  
-  write_lines(paste(html_head, q_title,  paste(html_tbl$Final_Q_html, collapse = "\n"), sep = "\n"), paste(q_output_filename, ".html", sep = ""))
-  write_lines(paste(html_head, qna_title, paste(html_tbl$Final_QnA_html, collapse = "\n"), sep = "\n"), paste(qna_output_filename, ".html", sep = ""))
+  write_lines(paste(html_head, q_output_title,  paste(html_tbl$Final_Q_html, collapse = "\n"), sep = "\n"), paste(q_output_filename, ".html", sep = ""))
+  write_lines(paste(html_head, qna_output_title, paste(html_tbl$Final_QnA_html, collapse = "\n"), sep = "\n"), paste(qna_output_filename, ".html", sep = ""))
   
   return(html_tbl)
 }
@@ -194,11 +204,26 @@ img_refs_to_html <- function(string, image_dir) {
   return(str_replace_all(string, "(\\[\\[)(.*?)(\\]\\])", paste('<img src="', image_dir, '/\\2">', sep = "")))
 }
 
-uqf_to_html <- function(uqf_zip_path, verify = T, mode = "strict", randomise_op = F) {
+markdown_to_html <- function(string) {
+  return(mark(I(string),
+       format = "html",
+       options = list(
+         hardbreaks = T
+       )))
+}
+
+uqf_to_html <- function(uqf_zip_path, 
+                        verify = T, 
+                        mode = "strict", 
+                        randomise_op = F, 
+                        title = NA, 
+                        q_title = " - Questions", 
+                        qna_title = " - Answers") {
   uqf_name <- file_path_sans_ext(basename(uqf_zip_path))
+  if(is.na(title)) {title <- uqf_name}
   uqf_tbl <- read_uqf(uqf_zip_path, verify = verify)
   iqf_tbl <- uqf_to_iqf(uqf_tbl, mode = mode)
-  html_tbl <- iqf_to_html(iqf_tbl, randomise_op = randomise_op, image_dir = uqf_name, output_filename = uqf_name)
+  html_tbl <- iqf_to_html(iqf_tbl, randomise_op = randomise_op, image_dir = uqf_name, output_filename = uqf_name, title = title, q_title = q_title, qna_title = qna_title)
   return(list(
     uqf = uqf_tbl,
     iqf = iqf_tbl, 
