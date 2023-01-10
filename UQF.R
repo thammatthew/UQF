@@ -1,7 +1,7 @@
 library(tidyverse)
 library(tools)
 library(readxl)
-library(markdown)
+library(commonmark)
 
 read_uqf <- function(uqf_zip_path, verify = T) {
   uqf_paths <- unzip(uqf_zip_path, list = TRUE) %>% pull(Name)
@@ -205,11 +205,11 @@ img_refs_to_html <- function(string, image_dir) {
 }
 
 markdown_to_html <- function(string) {
-  return(mark(I(string),
-       format = "html",
-       options = list(
-         hardbreaks = T
-       )))
+  return(markdown_html(string,
+                       hardbreaks = T,
+                       smart = T,
+                       extensions = T
+                       ))
 }
 
 uqf_to_html <- function(uqf_zip_path, 

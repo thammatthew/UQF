@@ -23,12 +23,24 @@ img {
     max-height: 3in;
     max-width: 100%;
     display: block;
-    margin-bottom: 1em;
+}
+
+p + img, img + img, 
+p + table, table + table {
+    margin-top: 1em;
+}
+
+img + p,
+table + p {
+    margin-top: 1em;
+}
+
+p > img, div > img {
+    margin: 1em 0;
 }
 
 table {
     border-collapse: collapse;
-    margin-bottom: 1em;
     font-family: Inter, Helvetica, Arial, sans-serif;
     font-size: 11pt;
     line-height: normal;
