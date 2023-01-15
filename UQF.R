@@ -4,13 +4,11 @@ library(readxl)
 library(commonmark)
 
 read_uqf <- function(uqf_zip_path, verify = T) {
-  uqf_paths <- unzip(uqf_zip_path, list = TRUE) %>% pull(Name)
-  
   uqf_dir <- file_path_sans_ext(uqf_zip_path)
   unzip(uqf_zip_path, junkpaths = T, exdir = uqf_dir, overwrite = T)
   
   # Standardise all filenames to lowercase
-  renamed <- file.rename(list.files(uqf_dir, full.names = T),
+  renamed <- file.rename(list.files(uqf_dir, full.names = T, all.files = F),
               file.path(uqf_dir, tolower(list.files(uqf_dir))))
   
   if(verify == T) {
@@ -21,7 +19,7 @@ read_uqf <- function(uqf_zip_path, verify = T) {
     }
   }
   
-  uqf_dir_paths <- list.files(uqf_dir, full.names = T)
+  uqf_dir_paths <- list.files(uqf_dir, full.names = T, all.files = F)
   qtbl_paths <- str_extract(uqf_dir_paths, regex("^(?!~\\$|\\.~).*(\\.xlsx|\\.csv|\\.tsv)$", multiline = T))
   qtbl_path <- qtbl_paths[!is.na(qtbl_paths)][1]
   
@@ -70,7 +68,7 @@ read_uqf <- function(uqf_zip_path, verify = T) {
     if(all(img_refs %in% uqf_names)){
       cat("All referenced image files found.\n")
     } else {
-      stop("Referenced image file not found, aborting.")
+      stop(paste("Following image references not found in folder, aborting.", paste(img_refs[!(img_refs %in% uqf_names)], collapse = ", "), sep = "\n"))
     }
   }
 
