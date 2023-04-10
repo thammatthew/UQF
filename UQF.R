@@ -53,8 +53,7 @@ read_uqf <- function(uqf_zip_path, verify = T) {
       Question = str_trim(img_refs_to_lowercase(Question)),
       Options = img_refs_to_lowercase(Options),
       Explanation = str_trim(img_refs_to_lowercase(Explanation))
-    ) %>%
-    select(Question, Options, Answers, Explanation)
+    )
 
   if(verify == T) {
     # Verify required columns exist in qtbl
