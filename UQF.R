@@ -2,7 +2,7 @@ library(tidyverse)
 library(tools)
 library(readxl)
 library(commonmark)
-library(pandoc)
+# library(pandoc)
 
 read_uqf <- function(uqf_zip_path, verify = T) {
   uqf_dir <- file_path_sans_ext(uqf_zip_path)
@@ -203,20 +203,21 @@ img_refs_to_html <- function(string, image_dir) {
   return(str_replace_all(string, "(\\[\\[)(.*?)(\\]\\])", paste('<img src="', image_dir, '/\\2">', sep = "")))
 }
 
-# markdown_to_html <- function(string) {
-#   return(markdown_html(string,
-#                        hardbreaks = T,
-#                        smart = T,
-#                        extensions = T
-#                        ))
-# }
-
 markdown_to_html <- function(string) {
-  return(pandoc_convert(text = string,
-                       from = "markdown",
-                       to = "html"
-  ))
+  return(markdown_html(string,
+                       hardbreaks = T,
+                       smart = T,
+                       extensions = T
+                       ))
 }
+
+# markdown_to_html <- function(string) {
+#   lines <- pandoc_convert(text = string,
+#                           from = "markdown",
+#                           to = "html")
+#   html <- paste(lines, collapse = "\n")
+#   return(html)
+# }
 
 uqf_to_html <- function(uqf_zip_path, 
                         verify = T, 
