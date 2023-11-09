@@ -2,6 +2,7 @@ library(tidyverse)
 library(tools)
 library(readxl)
 library(commonmark)
+library(uuid)
 # library(pandoc)
 
 read_uqf <- function(uqf_zip_path, verify = T) {
@@ -234,4 +235,46 @@ uqf_to_html <- function(uqf_zip_path,
     uqf = uqf_tbl,
     iqf = iqf_tbl, 
     html_tbl = html_tbl))
+}
+
+update_uqf <- function(uqf, source_label = NA) {
+  # Add metadata columns if not already present
+  metadata <- c(source = NA_character_, field = NA_character_, topic = NA_character_, tags = NA_character_, source_id = NA_character_, question_id = NA_character_)
+  uqf_converted <- uqf %>% add_column(!!!metadata[setdiff(names(metadata), names(uqf))])
+  # Insert new source label, if supplied
+  if(!is.na(source_label)) {uqf_converted <- uqf_converted %>% mutate(source = source_label)}
+  uqf_converted <- uqf_converted %>% mutate(source = if_else(is.na(source), "Unknown source", source))
+  # Generate UUID for each question, unless a valid one already exists
+  uqf_converted <- uqf_converted %>% mutate(question_id = if_else(UUIDparse(uqf_converted$question_id, output = "logical"), uqf_converted$question_id, UUIDgenerate(n = nrow(uqf))))
+  # Check if existing source_ids are valid (i.e. one valid UUID for all questions with the same source)
+  source_id_valid <- uqf_converted %>% 
+    group_by(source) %>% 
+    summarise(count = n_distinct(source_id), uuid = all(UUIDparse(source_id, output = "logical")))
+  source_id_valid <- source_id_valid %>% 
+    mutate(
+      valid = (count == 1) & uuid,
+      valid = if_else(!is.na(valid), valid, F),
+      candidate = UUIDgenerate(n = nrow(source_id_valid))
+    )
+  # Replace UUID for each source, unless a valid one already exists
+  uqf_converted <- uqf_converted %>%
+    rowwise() %>%
+    mutate(
+      source_id = if_else(source_id_valid[which(source_id_valid$source == source), "valid"] %>% pull(),
+                          source_id, 
+                          source_id_valid[which(source_id_valid$source == source), "candidate"] %>% pull())
+    )
+  # Reorder required columns first
+  uqf_converted <- uqf_converted %>%
+    relocate(Question, Options, Answers, Explanation, source, field, topic, tags, source_id, question_id)
+  return(uqf_converted)
+}
+
+pack_uqf <- function(uqf, uqf_dir, uqf_file_path) {
+  uqf_dir_paths <- list.files(uqf_dir, full.names = T, all.files = F, include.dirs = F, recursive = T)
+  qtbl_paths <- str_extract(uqf_dir_paths, regex("^(?!~\\$|\\.~).*(\\.xlsx|\\.csv|\\.tsv)$", multiline = T))
+  media_paths <- uqf_dir_paths[! uqf_dir_paths %in% qtbl_paths]
+  qtbl_path <- file.path(uqf_dir, "questions.csv")
+  write_csv(uqf, qtbl_path)
+  zip(uqf_file_path, c(media_paths, qtbl_path), extras = '-j')
 }
