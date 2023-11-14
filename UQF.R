@@ -7,6 +7,7 @@ library(uuid)
 
 read_uqf <- function(uqf_zip_path, verify = T) {
   uqf_dir <- file_path_sans_ext(uqf_zip_path)
+  if (file.exists(uqf_dir)) { unlink(uqf_dir, recursive = T) }
   unzip(uqf_zip_path, junkpaths = T, exdir = uqf_dir, overwrite = T)
   
   # Standardise all filenames to lowercase
@@ -263,7 +264,8 @@ update_uqf <- function(uqf, source_label = NA) {
       source_id = if_else(source_id_valid[which(source_id_valid$source == source), "valid"] %>% pull(),
                           source_id, 
                           source_id_valid[which(source_id_valid$source == source), "candidate"] %>% pull())
-    )
+    ) %>%
+    ungroup()
   # Reorder required columns first
   uqf_converted <- uqf_converted %>%
     relocate(Question, Options, Answers, Explanation, source, field, topic, tags, source_id, question_id)
@@ -277,4 +279,5 @@ pack_uqf <- function(uqf, uqf_dir, uqf_file_path) {
   qtbl_path <- file.path(uqf_dir, "questions.csv")
   write_csv(uqf, qtbl_path)
   zip(uqf_file_path, c(media_paths, qtbl_path), extras = '-j')
+  if (file.exists(uqf_dir)) { unlink(uqf_dir, recursive = T) }
 }
