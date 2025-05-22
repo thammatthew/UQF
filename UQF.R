@@ -246,7 +246,10 @@ update_uqf <- function(uqf, source_label = NA) {
   if(!is.na(source_label)) {uqf_converted <- uqf_converted %>% mutate(source = source_label)}
   uqf_converted <- uqf_converted %>% mutate(source = if_else(is.na(source), "Unknown source", source))
   # Generate UUID for each question, unless a valid one already exists
-  uqf_converted <- uqf_converted %>% mutate(question_id = if_else(UUIDparse(uqf_converted$question_id, output = "logical"), uqf_converted$question_id, UUIDgenerate(n = nrow(uqf))))
+  uqf_converted <- uqf_converted %>% rowwise() %>% 
+    mutate(question_id = if_else(is.na(question_id), UUIDgenerate(), question_id)) %>% 
+    mutate(question_id = if_else(UUIDparse(question_id, output = "logical"), question_id, UUIDgenerate())) %>% 
+    ungroup()
   # Check if existing source_ids are valid (i.e. one valid UUID for all questions with the same source)
   source_id_valid <- uqf_converted %>% 
     group_by(source) %>% 
